@@ -1,0 +1,16 @@
+{
+  "name": "opendata-api",
+  "version": "1.0.0",
+  "description": "API to the Postgres database created through the OpenData Harvester",
+  "main": "handler.js",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-aws-documentation": "^1.1.0",
+    "spectacle-docs": "^1.0.7"
+  },
+  "scripts": {
+    "docs": "serverless downloadDocumentation --outputFileName=docs/api.json && spectacle docs/api.json --target-dir docs"
+  },
+  "author": "sebastian-meier @seb_meier",
+  "license": "MIT"
+}

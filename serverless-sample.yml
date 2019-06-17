@@ -1,0 +1,296 @@
+service: opendata-api
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: dev
+  profile: YOUR_PROFILE
+  region: YOUR_REGION
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "states:StartExecution"
+      Resource:
+        - "*"
+    - Effect: Allow
+      Action:
+        - "ec2:CreateNetworkInterface"
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource: "*"
+  environment:
+    DB_USER: YOUR_USERNAME
+    DB_PASSWORD: YOUR_PASSWORD
+    DB_HOST: YOUR_HOST
+    DB_NAME: YOUR_DB_NAME
+    DB_PORT: YOUR_PORT
+
+package:
+  include:
+    - handler.js
+  exclude:
+    - node_modules/**
+    - docs/**
+
+functions:
+  topics:
+    handler: handler.topics
+    events:
+      - http:
+          path: topics
+          method: get
+          documentation:
+            summary: "Get list of topics"
+            description: "Through a query of precise filters, select topics used in Berlin's opendata portal. Supports pagination"
+            queryParams:
+              -
+                name: "page"
+                schema:
+                    type: integer
+                    default: 0
+                description: "Pagination index, if per page is not provided defaults to 100 per page. Index starts with 0!"
+              -
+                name: "per_page"
+                schema:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                    default: 20
+                description: "Number of results per page."
+              -
+                name: "query"
+                schema:
+                    type: string
+                    default: "*"
+                description: "Search in all columns of the table."
+              -
+                name: "sort"
+                schema:
+                    type: string
+                    default: "name"
+                description: "Column for sorting the table"
+              -
+                name: "order"
+                schema:
+                    type: string
+                    enum:
+                      - ASC
+                      - DESC
+                    default: "ASC"
+                description: "Sort method ascending (ASC) or descending (DESC), see also sort parameter"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseModels:
+                  "application/json": "Topics"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+      - http:
+          path: topic/{id}
+          method: get
+          documentation:
+            summary: "Get topic by id."
+            pathParams:
+              -
+                name: "id"
+                required: true
+                schema:
+                  type: string                
+                description: "id of topic"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseModels:
+                  "application/json": "Topic"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+  licenses:
+    handler: handler.licenses
+    events:
+      - http:
+          path: licenses
+          method: get
+          documentation:
+            summary: "Get list of licenses"
+            description: "This query selects all available licenes in the datasets and the number of datasets with the corresponding license."
+            queryParams:
+              -
+                name: "page"
+                schema:
+                    type: integer
+                    default: 0
+                description: "Pagination index, if per page is not provided defaults to 100 per page. Index starts with 0!"
+              -
+                name: "per_page"
+                schema:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                    default: 20
+                description: "Number of results per page."
+              -
+                name: "query"
+                schema:
+                    type: string
+                    default: "*"
+                description: "Search in all columns of the table."
+              -
+                name: "sort"
+                schema:
+                    type: string
+                    default: "name"
+                description: "Column for sorting the table"
+              -
+                name: "order"
+                schema:
+                    type: string
+                    enum:
+                      - ASC
+                      - DESC
+                    default: "ASC"
+                description: "Sort method ascending (ASC) or descending (DESC), see also sort parameter"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseModels:
+                  "application/json": "Licenses"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+  # tags:
+  #   handler: handler.tags
+  #   events:
+  #     - http:
+  #       path: tags
+  #       method: get
+  #     - http:
+  #       path: tag/{id}
+  #       method: get
+  #       documentation:
+  #         summary: "Get tag by id."
+  #         pathParams:
+  #           -
+  #             name: "id"
+  #             required: true
+  #             schema:
+  #               type: string                
+  #             description: "id of tag"
+  #         methodResponses:
+  #           -
+  #             statusCode: "200"
+  #             responseModels:
+  #               "application/json": "Tag"
+  #           -
+  #             statusCode: "400"
+  #             responseModels:
+  #               "application/json": "ErrorResponse"
+  # contributors:
+  #   handler: handler.contributors
+  #   events:
+  #     - http:
+  #       path: contributors
+  #       method: get
+  # maintainers:
+  #   handler: handler.maintainers
+  #   events:
+  #     - http:
+  #       path: maintainers
+  #       method: get
+  # sources:
+  #   handler: handler.sources
+  #   events:
+  #     - http:
+  #       path: sources
+  #       method: get
+  # datasets:
+  #   handler: handler.datasets
+  #   events:
+  #     - http:
+  #       path: datasets
+  #       method: get
+  #     - http:
+  #       path: dataset/{id}
+  #       method: get
+	# ?ATTRIBUTE= STRING
+	# ?geographical_granularity= FIXED_TERMS
+	# ?temporal_granularity= FIXED_TERMS
+	# ?geographical_coverage= FIXED_TERMS
+	# ?temporal_granularity= FIXED_TERMS
+	# ?for_time= TIMESTAMP (temporal_coverage should cover that timestamp)
+  # ?for_timespan= TIMESTAMP,TIMESTAMP (temporal_coverage should cover the timespan)
+
+custom:
+  documentation:
+    info:
+      version: "1"
+      title: "OpenData API"
+      description: "This is the best API ever
+      Nutzungsbedingungen: Hello"
+      contact:
+        name: "Sebastian Meier"
+        url: "https://lab.technologiestiftung-berlin.de"
+        email: "meier@technologiestiftung-berlin.de"
+      license:
+        name: "CC BY 3.0 DE - Namensnennung 3.0 Deutschland"
+        url: "https://creativecommons.org/licenses/by/3.0/de/"
+    models:
+      -
+        name: "ErrorResponse"
+        description: "Error Response"
+        contentType: "application/json"
+        schema:
+          type: "object"
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+      -
+        name: "Topic"
+        description: "Topics are categories used to organise datasets in the opendata portal."
+        contentType: "application/json"
+        schema:
+          type: "object"
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+      -
+        name: "Topics"
+        description: "See topic."
+        contentType: "application/json"
+        schema:
+          type: "array"
+          items:
+            $ref: "{{model: Topic}}"
+      -
+        name: "License"
+        description: "License of data sets."
+        contentType: "application/json"
+        schema:
+          type: "object"
+          properties:
+            count:
+              type: integer
+            name:
+              type: string
+      -
+        name: "Licenses"
+        description: "See license."
+        contentType: "application/json"
+        schema:
+          type: "array"
+          items:
+            $ref: "{{model: License}}"
+
+plugins:
+  - serverless-aws-documentation
